@@ -34,8 +34,8 @@ const register = async (req, res) => {
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: true, //should be true in production
-      sameSite: "none",
+      secure: false, //should be true in production
+      sameSite: "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -85,8 +85,8 @@ const login = async (req, res) => {
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: true, //should be true in production
-      sameSite: "none",
+      secure: false, //should be true in production
+      sameSite: "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
