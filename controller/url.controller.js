@@ -61,7 +61,8 @@ const redirectUrl = async (req, res) => {
 const getUserUrls = async (req, res) => {
   try {
     const urls = await Url.find({ user: req.user.userId });
-    res.json(urls);
+    console.log(urls)
+    return res.json(urls);
   } catch (error) {
     console.error("Get URLs Error:", error);
     res.status(500).json({ message: "Server error" });
