@@ -8,7 +8,7 @@ const userMiddleware = require("./middleware/user.middleware");
 const urlRoutes = require("./routes/url.route");
 const connectDB = require("./database/db");
 const cors = require("cors");
-const {connectRedis} = require("./config/redis")
+const {connectRedis,redisClient} = require("./config/redis")
 
 connectRedis()
 connectDB();
@@ -26,7 +26,6 @@ app.use(express.json());
 app.use(cookieParser());
 app.use("/auth", userRoutes);
 app.use("/",userMiddleware, urlRoutes);
-
 
 port = process.env.PORT || 8001;
 app.listen(port, () => {

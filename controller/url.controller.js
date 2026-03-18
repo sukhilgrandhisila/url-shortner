@@ -62,31 +62,35 @@ const redirectUrl = async (req, res) => {
 
 const getUserUrls = async (req, res) => {
   try {
+    const start = Date.now();
     const userId = req.user.userId;
+    const cacheKey = `user:${userId}:urls`;
 
-    // 1️⃣ Check Redis cache
-    const cached = await redisClient.get(`user:${userId}:urls`);
+    // 1️⃣ Redis check (FAST PATH)
+    const cached = await redisClient.get(cacheKey);
     if (cached) {
-      console.log("Redis is working")
       return res.json(JSON.parse(cached));
+      // console.log("Parse time:", Date.now() - parseStart, "ms");
     }
 
-    // 2️⃣ Fetch from DB
-    const urls = await Url.find({ user: userId });
+    // 2️⃣ DB query (OPTIMIZED)
+    const urls = await Url.find({ user: userId })
+      .select("shortCode originalUrl") // only required fields
+      .lean(); // removes mongoose overhead
 
-    // 3️⃣ Store in Redis (5 min TTL)
-    await redisClient.set(
-      `user:${userId}:urls`,
-      JSON.stringify(urls),
-      { EX: 300 }
-    );
-
+    // 3️⃣ Cache result (NON-BLOCKING)
+    redisClient.set(cacheKey, JSON.stringify(urls), {
+      EX: 300, // 5 min
+    });
     return res.json(urls);
+    
   } catch (error) {
     console.error("Get URLs Error:", error);
-    res.status(500).json({ message: "Server error" });
+    return res.status(500).json({ message: "Server error" });
   }
 };
+
+module.exports = { getUserUrls };
 
 const deleteUrl = async (req, res) => {
   try {
