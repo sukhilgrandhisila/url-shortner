@@ -1,3 +1,5 @@
+const { redisClient } = require("../config/redis");
+
 const Url = require("../model/url.model");
 const {nanoid} = require("nanoid");
 
@@ -60,8 +62,25 @@ const redirectUrl = async (req, res) => {
 
 const getUserUrls = async (req, res) => {
   try {
-    const urls = await Url.find({ user: req.user.userId });
-    console.log(urls)
+    const userId = req.user.userId;
+
+    // 1️⃣ Check Redis cache
+    const cached = await redisClient.get(`user:${userId}:urls`);
+    if (cached) {
+      console.log("Redis is working")
+      return res.json(JSON.parse(cached));
+    }
+
+    // 2️⃣ Fetch from DB
+    const urls = await Url.find({ user: userId });
+
+    // 3️⃣ Store in Redis (5 min TTL)
+    await redisClient.set(
+      `user:${userId}:urls`,
+      JSON.stringify(urls),
+      { EX: 300 }
+    );
+
     return res.json(urls);
   } catch (error) {
     console.error("Get URLs Error:", error);

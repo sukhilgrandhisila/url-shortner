@@ -8,8 +8,11 @@ const userMiddleware = require("./middleware/user.middleware");
 const urlRoutes = require("./routes/url.route");
 const connectDB = require("./database/db");
 const cors = require("cors");
+const {connectRedis} = require("./config/redis")
 
+connectRedis()
 connectDB();
+
 
 app.use(
   cors({
@@ -24,7 +27,10 @@ app.use(cookieParser());
 app.use("/auth", userRoutes);
 app.use("/",userMiddleware, urlRoutes);
 
+
 port = process.env.PORT || 8001;
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
+
+
