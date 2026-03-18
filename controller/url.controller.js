@@ -1,5 +1,5 @@
 const Url = require("../model/url.model");
-const shortid = require("shortid");
+const {nanoid} = require("nanoid");
 
 const createShortUrl = async (req, res) => {
   try {
@@ -11,7 +11,7 @@ const createShortUrl = async (req, res) => {
       });
     }
 
-    const shortCode = shortid.generate();
+    const shortCode = nanoid(6);
 
     // FIX: Changed URL to Url
     const newUrl = await Url.create({
