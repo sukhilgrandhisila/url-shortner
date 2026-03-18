@@ -22,7 +22,7 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 app.use("/auth", userRoutes);
-app.use("/url",userMiddleware, urlRoutes);
+app.use("/",userMiddleware, urlRoutes);
 
 port = process.env.PORT || 8001;
 app.listen(port, () => {
