@@ -8,9 +8,6 @@ const userMiddleware = require("./middleware/user.middleware");
 const urlRoutes = require("./routes/url.route");
 const connectDB = require("./database/db");
 const cors = require("cors");
-const {connectRedis,redisClient} = require("./config/redis")
-
-connectRedis()
 connectDB();
 
 
