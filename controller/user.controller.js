@@ -15,8 +15,28 @@ const register = async (req, res) => {
     const existingUser = await User.findOne({ email });
 
     if (existingUser) {
-      return res.status(409).json({
-        message: "User already exists",
+      const isMatch = await bcrypt.compare(password, existingUser.password);
+
+      if (!isMatch) {
+        return res.status(401).json({
+          message: "Invalid email or password",
+        });
+      }
+
+      const token = jwt.sign(
+        { userId: existingUser._id },
+        process.env.JWT_SECRET,
+        { expiresIn: "7d" },
+      );
+
+      return res.status(200).json({
+        message: "Login successful",
+        user: {
+          _id: existingUser._id,
+          username: existingUser.username,
+          email: existingUser.email,
+        },
+        token,
       });
     }
 
@@ -30,13 +50,6 @@ const register = async (req, res) => {
 
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
       expiresIn: "7d",
-    });
-
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: true, //should be true in production
-      sameSite: "None",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     return res.status(201).json({
@@ -81,13 +94,6 @@ const login = async (req, res) => {
 
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
       expiresIn: "7d",
-    });
-
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: true, //should be true in production
-      sameSite: "None",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     return res.status(200).json({
