@@ -11,9 +11,21 @@ const createShortUrl = async (req, res) => {
       });
     }
 
+    const existingUrl = await Url.findOne({
+      originalUrl,
+      user: req.user?.userId,
+    });
+
+    if (existingUrl) {
+      return res.status(200).json({
+        message: "Short URL already exists",
+        id: existingUrl._id,
+        shortUrl: `${req.protocol}://${req.get("host")}/${existingUrl.shortCode}`,
+      });
+    }
+
     const shortCode = nanoid(6);
 
-    // FIX: Changed URL to Url
     const newUrl = await Url.create({
       originalUrl,
       shortCode,
@@ -21,9 +33,11 @@ const createShortUrl = async (req, res) => {
     });
 
     return res.status(201).json({
+      message: "Short URL created successfully",
       id: newUrl._id,
       shortUrl: `${req.protocol}://${req.get("host")}/${shortCode}`,
     });
+
   } catch (error) {
     console.error("Create URL Error:", error);
     return res.status(500).json({ message: "Server error" });
