@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const usermiddleware = require("../middleware/user.middleware")
 
 const {
   createShortUrl,
@@ -9,9 +10,9 @@ const {
   handleGetAnalytics,
 } = require("../controller/url.controller");
 
-router.post("/shorten", createShortUrl);
-router.get("/myurls", getUserUrls);
+router.post("/shorten",usermiddleware, createShortUrl);
+router.get("/myurls",usermiddleware, getUserUrls);
 router.get("/:shortCode", redirectUrl);
-router.delete("/:id", deleteUrl);
-router.get("/analytics/:shortId", handleGetAnalytics);
+router.delete("/:id",usermiddleware, deleteUrl);
+router.get("/analytics/:shortId",usermiddleware, handleGetAnalytics);
 module.exports = router;
