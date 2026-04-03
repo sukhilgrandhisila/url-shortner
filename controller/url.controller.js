@@ -74,9 +74,25 @@ const redirectUrl = async (req, res) => {
 
 const getUserUrls = async (req, res) => {
   try {
-    const urls = await Url.find({ user: req.user.userId });
-    console.log(urls)
-    return res.json(urls);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+
+    const skip = (page - 1) * limit;
+
+    const urls = await Url.find({ user: req.user.userId })
+      .select("originalUrl shortCode createdAt")
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    const total = await Url.countDocuments({ user: req.user.userId });
+
+    return res.json({
+      data: urls,
+      currentPage: page,
+      totalPages: Math.ceil(total / limit),
+      totalUrls: total,
+    });
   } catch (error) {
     console.error("Get URLs Error:", error);
     res.status(500).json({ message: "Server error" });
