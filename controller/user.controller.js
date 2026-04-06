@@ -140,28 +140,29 @@ const logout = async (req, res) => {
 };
 
 const profile = async (req, res) => {
+  console.time("Profile DB Query"); 
+  
   try {
     const userId = req.user.userId;
 
-    const user = await User.findById(userId).select("username email");
+    // 1. .select("-_id"): Tells the DB NOT to send the _id back over the network (saves bandwidth).
+    // 2. .lean(): Skips Mongoose hydration (saves memory and CPU).
+    const user = await User.findById(userId)
+      .select("username email -_id") 
+      .lean();
+
+    console.timeEnd("Profile DB Query"); // Stop timer exactly after DB responds
 
     if (!user) {
-      return res.status(404).json({
-        message: "User not found",
-      });
+      return res.status(404).json({ message: "User not found" });
     }
 
-    return res.status(200).json({
-      user: {
-        username: user.username,
-        email: user.email,
-      },
-    });
+    // 3. Since we used .select() to shape the data, we can just send it directly!
+    return res.status(200).json({ user }); 
+
   } catch (error) {
     console.error("Profile Fetch Error:", error);
-    return res.status(500).json({
-      message: "Internal server error",
-    });
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 
