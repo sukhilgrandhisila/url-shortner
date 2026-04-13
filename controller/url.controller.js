@@ -81,6 +81,7 @@ const getUserUrls = async (req, res) => {
 
     const urls = await Url.find({ user: req.user.userId })
       .select("originalUrl shortCode createdAt")
+      .sort({ createdAt: -1, _id: -1 })
       .skip(skip)
       .limit(limit)
       .lean();
